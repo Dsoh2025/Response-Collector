@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Concentration Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    /* Start page container */
+    #startPage {
+      margin: 0 auto;
+      padding: 20px;
+      max-width: 600px;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    #nameBlocks {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    /* Clickable name blocks */
+    .nameBlock {
+      display: inline-block;
+      padding: 20px 30px;
+      margin: 10px;
+      background-color: #007BFF;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.3s;
+    }
+    .nameBlock:hover {
+      background-color: #0056b3;
+    }
+    /* Tracker page (hidden until a name is selected) */
+    #tracker {
+      display: none;
+      margin-top: 20px;
+    }
+    /* Modal styles */
+    #modal {
+      display: none; /* hidden by default */
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    #modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 4px;
+      width: 300px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    /* Rating buttons styling */
+    #ratingButtons button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: #fff;
+      transition: background-color 0.3s;
+    }
+    #ratingButtons button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <!-- Start Page -->
+  <div id="startPage">
+    <h1>Welcome to the Concentration Tracker</h1>
+    <p>Please click your name to begin:</p>
+    <div id="nameBlocks">
+      <!-- Clickable blocks for each student. Customize as needed. -->
+      <div class="nameBlock" data-name="Alice">Alice</div>
+      <div class="nameBlock" data-name="Bob">Bob</div>
+      <div class="nameBlock" data-name="Charlie">Charlie</div>
+      <div class="nameBlock" data-name="Dana">Dana</div>
+    </div>
+  </div>
+
+  <!-- Tracker Page (hidden until a name is selected) -->
+  <div id="tracker">
+    <h1>Concentration Tracker</h1>
+    <p>This website will ask you every 5 minutes to rate your concentration on a 5‑point scale.</p>
+
+    <!-- Modal structure -->
+    <div id="modal">
+      <div id="modal-content">
+        <p>Rate your concentration (1 = Not at all, 5 = Extremely):</p>
+        <div id="ratingButtons">
+          <button class="ratingButton" data-rating="1">1</button>
+          <button class="ratingButton" data-rating="2">2</button>
+          <button class="ratingButton" data-rating="3">3</button>
+          <button class="ratingButton" data-rating="4">4</button>
+          <button class="ratingButton" data-rating="5">5</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Replace with your deployed Google Apps Script web app URL.
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyGEtuKjZaWpwxqA4ayO7HdGGHzQLiyU9JE_OCnZcP7Z7_cA8HphxeET8giNfswVttF_Q/exec';
+
+    // Global variable to store the selected student's name.
+    let studentName = '';
+
+    // Function to show the modal.
+    function showModal() {
+      document.getElementById("modal").style.display = "block";
+    }
+
+    // Function to hide the modal.
+    function hideModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+
+    // Record the response (rating) along with the student's name and send it to Google Sheets.
+    function recordResponse(rating) {
+      const response = {
+        timestamp: new Date().toISOString(),
+        name: studentName,
+        rating: rating
+      };
+      console.log("Response recorded:", response);
+
+      // Send data to Google Sheets via the Apps Script endpoint.
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify(response),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => console.log("Data stored:", data))
+      .catch(error => console.error("Error storing data:", error));
+    }
+
+    // Set up event listeners for the rating buttons.
+    document.querySelectorAll('.ratingButton').forEach(button => {
+      button.addEventListener('click', function() {
+        const rating = parseInt(this.getAttribute('data-rating'));
+        recordResponse(rating);
+        hideModal();
+      });
+    });
+
+    // Set up event listeners for the clickable name blocks.
+    document.querySelectorAll('.nameBlock').forEach(block => {
+      block.addEventListener('click', function() {
+        studentName = this.getAttribute('data-name');
+        console.log("Student selected:", studentName);
+        // Hide the start page and show the tracker page.
+        document.getElementById("startPage").style.display = "none";
+        document.getElementById("tracker").style.display = "block";
+        // Show the first modal immediately.
+        showModal();
+      });
+    });
+
+    // Set an interval to show the modal every 5 minutes (300,000 milliseconds).
+    setInterval(showModal, 300000);
+  </script>
+</body>
+</html>
