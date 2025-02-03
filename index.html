@@ -147,7 +147,7 @@
   </div>
 
   <script>
-    // Replace with your deployed Apps Script web app URL.
+    // Use the provided Apps Script web app URL.
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxbxhXHdw0YlaknWgpVJmktL9hYnxk9JDy4W_moqdX9Xmtx_1NFj55qfe7tWCJTLhmV/exec';
 
     // Global variable for storing the selected student's name.
@@ -189,7 +189,7 @@
           console.log("Server response:", response);
         });
         hideModal();
-        countdownSeconds = 300;
+        countdownSeconds = 300; // Reset timer after rating submission.
       });
     });
     // Event listeners for name blocks.
