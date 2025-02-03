@@ -3,85 +3,111 @@
 <head>
   <meta charset="UTF-8" />
   <title>Concentration Tracker</title>
+  <!-- Import a futuristic font -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    /* Global Styles */
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
       text-align: center;
-      padding: 20px;
-      background: #f4f4f4;
+      overflow-x: hidden;
     }
     h1 {
-      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #00ffea, 0 0 20px #00ffea;
     }
-    /* Start page container */
+
+    /* Start Page Container */
     #startPage {
-      margin: 0 auto;
-      padding: 20px;
-      max-width: 600px;
-      background: #fff;
-      border-radius: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 30px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #00ffea;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #00ffea;
     }
     #nameBlocks {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 20px;
+      gap: 20px;
+      margin-top: 30px;
     }
-    /* Clickable name blocks */
+    /* Name Blocks (Clickable) */
     .nameBlock {
-      display: inline-block;
+      background: #1a1a1a;
       padding: 20px 30px;
-      margin: 10px;
-      background-color: #007BFF;
-      color: #fff;
+      border: 2px solid #00ffea;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 18px;
-      transition: background-color 0.3s;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px #00ffea;
     }
     .nameBlock:hover {
-      background-color: #0056b3;
+      background: #00ffea;
+      color: #000;
+      box-shadow: 0 0 20px #00ffea;
     }
-    /* Tracker page (hidden until a name is selected) */
+    /* Tracker Page (Hidden until a name is selected) */
     #tracker {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 30px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #00ffea;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #00ffea;
       display: none;
-      margin-top: 20px;
     }
-    /* Modal styles */
+    /* Countdown Timer */
+    #countdownTimer {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #00ffea;
+    }
+    /* Modal Styles */
     #modal {
       display: none; /* Hidden by default */
       position: fixed;
-      z-index: 1;
+      z-index: 100;
       left: 0;
       top: 0;
       width: 100%;
       height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.8);
     }
     #modal-content {
-      background-color: #fff;
+      background: rgba(0, 0, 0, 0.9);
       margin: 15% auto;
-      padding: 20px;
-      border-radius: 4px;
-      width: 300px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      padding: 30px;
+      border: 2px solid #00ffea;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 0 30px #00ffea;
     }
-    /* Rating buttons styling */
+    /* Rating Buttons */
     #ratingButtons button {
       padding: 10px 20px;
-      margin: 5px;
-      border: none;
+      margin: 10px;
+      border: 2px solid #00ffea;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 16px;
-      background-color: #007BFF;
+      font-size: 1.2em;
+      background: #1a1a1a;
       color: #fff;
-      transition: background-color 0.3s;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px #00ffea;
     }
     #ratingButtons button:hover {
-      background-color: #0056b3;
+      background: #00ffea;
+      color: #000;
+      box-shadow: 0 0 20px #00ffea;
     }
   </style>
 </head>
@@ -89,9 +115,8 @@
   <!-- Start Page -->
   <div id="startPage">
     <h1>Welcome to the Concentration Tracker</h1>
-    <p>Please click your name to begin:</p>
+    <p>Please select your name to begin:</p>
     <div id="nameBlocks">
-      <!-- Clickable blocks for each student. Customize as needed. -->
       <div class="nameBlock" data-name="Alice">Alice</div>
       <div class="nameBlock" data-name="Bob">Bob</div>
       <div class="nameBlock" data-name="Charlie">Charlie</div>
@@ -99,12 +124,14 @@
     </div>
   </div>
 
-  <!-- Tracker Page (hidden until a name is selected) -->
+  <!-- Tracker Page -->
   <div id="tracker">
     <h1>Concentration Tracker</h1>
-    <p>This website will ask you every 5 minutes to rate your concentration on a 5‑point scale.</p>
-
-    <!-- Modal structure -->
+    <p>This website will prompt you every 5 minutes to rate your concentration on a 5‑point scale.</p>
+    <!-- Countdown Timer -->
+    <p id="countdownTimer">300 seconds until next prompt</p>
+    
+    <!-- Modal -->
     <div id="modal">
       <div id="modal-content">
         <p>Rate your concentration (1 = Not at all, 5 = Extremely):</p>
@@ -123,75 +150,73 @@
     // Replace with your deployed Apps Script web app URL.
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxbxhXHdw0YlaknWgpVJmktL9hYnxk9JDy4W_moqdX9Xmtx_1NFj55qfe7tWCJTLhmV/exec';
 
-    // Global variable to store the selected student's name.
+    // Global variable for storing the selected student's name.
     let studentName = '';
+    // Countdown timer in seconds (300 seconds = 5 minutes).
+    let countdownSeconds = 300;
 
     // Function to show the modal.
     function showModal() {
       document.getElementById("modal").style.display = "block";
     }
-
     // Function to hide the modal.
     function hideModal() {
       document.getElementById("modal").style.display = "none";
     }
-
     // Function to send data using JSONP.
     function sendRating(timestamp, name, rating, callback) {
-      // Generate a random callback name.
       const callbackName = 'jsonpCallback_' + Math.floor(Math.random() * 1000000);
-      
       // Define the callback function.
       window[callbackName] = function(response) {
         callback(response);
-        // Clean up: remove the script element and delete the callback.
         document.body.removeChild(script);
         delete window[callbackName];
       };
-
-      // Create the script element.
       const script = document.createElement('script');
-      
-      // Build the URL with parameters and the callback.
       script.src = scriptURL +
         '?timestamp=' + encodeURIComponent(timestamp) +
         '&name=' + encodeURIComponent(name) +
         '&rating=' + encodeURIComponent(rating) +
         '&callback=' + callbackName;
-      
-      // Append the script to the document so it loads.
       document.body.appendChild(script);
     }
-
-    // Set up event listeners for the rating buttons.
+    // Event listeners for rating buttons.
     document.querySelectorAll('.ratingButton').forEach(button => {
       button.addEventListener('click', function() {
         const rating = this.getAttribute('data-rating');
         const timestamp = new Date().toISOString();
-        // Send the rating data via JSONP.
         sendRating(timestamp, studentName, rating, function(response) {
           console.log("Server response:", response);
         });
         hideModal();
+        countdownSeconds = 300;
       });
     });
-
-    // Set up event listeners for the clickable name blocks.
+    // Event listeners for name blocks.
     document.querySelectorAll('.nameBlock').forEach(block => {
       block.addEventListener('click', function() {
         studentName = this.getAttribute('data-name');
         console.log("Student selected:", studentName);
-        // Hide the start page and show the tracker page.
         document.getElementById("startPage").style.display = "none";
         document.getElementById("tracker").style.display = "block";
-        // Show the first modal immediately.
+        countdownSeconds = 300;
         showModal();
       });
     });
-
-    // Set an interval to show the modal every 5 minutes (300,000 milliseconds).
-    setInterval(showModal, 300000);
+    // Function to update the countdown timer.
+    function updateCountdown() {
+      const timerElem = document.getElementById("countdownTimer");
+      if (timerElem) {
+        timerElem.textContent = countdownSeconds + " seconds until next prompt";
+      }
+      countdownSeconds--;
+      if (countdownSeconds < 0) {
+        showModal();
+        countdownSeconds = 300;
+      }
+    }
+    // Update the countdown every second.
+    setInterval(updateCountdown, 1000);
   </script>
 </body>
 </html>
-
