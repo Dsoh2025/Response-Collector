@@ -21,7 +21,6 @@
       margin-bottom: 20px;
       text-shadow: 0 0 10px #00ffea, 0 0 20px #00ffea;
     }
-
     /* Start Page Container */
     #startPage {
       max-width: 800px;
@@ -125,6 +124,7 @@
     <h1>Welcome to the Concentration Tracker</h1>
     <p>Please select your name to begin:</p>
     <div id="nameBlocks">
+      <!-- Only the new names are included -->
       <div class="nameBlock" data-name="America">America</div>
       <div class="nameBlock" data-name="Sure">Sure</div>
       <div class="nameBlock" data-name="Gabby">Gabby</div>
@@ -224,4 +224,25 @@
         studentName = this.getAttribute('data-name');
         console.log("Student selected:", studentName);
         document.getElementById("startPage").style.display = "none";
-        document.getElementById("tracker").style.display = "bloc
+        document.getElementById("tracker").style.display = "block";
+        countdownSeconds = 300;
+        showModal();
+      });
+    });
+    // Function to update the countdown timer.
+    function updateCountdown() {
+      const timerElem = document.getElementById("countdownTimer");
+      if (timerElem) {
+        timerElem.textContent = countdownSeconds + " seconds until next prompt";
+      }
+      countdownSeconds--;
+      if (countdownSeconds < 0) {
+        showModal();
+        countdownSeconds = 300;
+      }
+    }
+    // Update the countdown every second.
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
