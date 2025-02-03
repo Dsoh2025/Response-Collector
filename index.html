@@ -50,7 +50,7 @@
     }
     /* Modal styles */
     #modal {
-      display: none; /* hidden by default */
+      display: none; /* Hidden by default */
       position: fixed;
       z-index: 1;
       left: 0;
@@ -58,7 +58,7 @@
       width: 100%;
       height: 100%;
       overflow: auto;
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: rgba(0,0,0,0.5);
     }
     #modal-content {
       background-color: #fff;
@@ -66,7 +66,7 @@
       padding: 20px;
       border-radius: 4px;
       width: 300px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
     /* Rating buttons styling */
     #ratingButtons button {
@@ -120,8 +120,8 @@
   </div>
 
   <script>
-    // Replace with your deployed Google Apps Script web app URL.
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyGEtuKjZaWpwxqA4ayO7HdGGHzQLiyU9JE_OCnZcP7Z7_cA8HphxeET8giNfswVttF_Q/exec';
+    // Replace with your deployed Apps Script web app URL.
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxbxhXHdw0YlaknWgpVJmktL9hYnxk9JDy4W_moqdX9Xmtx_1NFj55qfe7tWCJTLhmV/exec';
 
     // Global variable to store the selected student's name.
     let studentName = '';
@@ -136,33 +136,42 @@
       document.getElementById("modal").style.display = "none";
     }
 
-    // Record the response (rating) along with the student's name and send it to Google Sheets.
-    function recordResponse(rating) {
-      const response = {
-        timestamp: new Date().toISOString(),
-        name: studentName,
-        rating: rating
+    // Function to send data using JSONP.
+    function sendRating(timestamp, name, rating, callback) {
+      // Generate a random callback name.
+      const callbackName = 'jsonpCallback_' + Math.floor(Math.random() * 1000000);
+      
+      // Define the callback function.
+      window[callbackName] = function(response) {
+        callback(response);
+        // Clean up: remove the script element and delete the callback.
+        document.body.removeChild(script);
+        delete window[callbackName];
       };
-      console.log("Response recorded:", response);
 
-      // Send data to Google Sheets via the Apps Script endpoint.
-      fetch(scriptURL, {
-        method: 'POST',
-        body: JSON.stringify(response),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(res => res.json())
-      .then(data => console.log("Data stored:", data))
-      .catch(error => console.error("Error storing data:", error));
+      // Create the script element.
+      const script = document.createElement('script');
+      
+      // Build the URL with parameters and the callback.
+      script.src = scriptURL +
+        '?timestamp=' + encodeURIComponent(timestamp) +
+        '&name=' + encodeURIComponent(name) +
+        '&rating=' + encodeURIComponent(rating) +
+        '&callback=' + callbackName;
+      
+      // Append the script to the document so it loads.
+      document.body.appendChild(script);
     }
 
     // Set up event listeners for the rating buttons.
     document.querySelectorAll('.ratingButton').forEach(button => {
       button.addEventListener('click', function() {
-        const rating = parseInt(this.getAttribute('data-rating'));
-        recordResponse(rating);
+        const rating = this.getAttribute('data-rating');
+        const timestamp = new Date().toISOString();
+        // Send the rating data via JSONP.
+        sendRating(timestamp, studentName, rating, function(response) {
+          console.log("Server response:", response);
+        });
         hideModal();
       });
     });
@@ -185,3 +194,4 @@
   </script>
 </body>
 </html>
+
