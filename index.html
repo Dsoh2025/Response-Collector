@@ -92,7 +92,7 @@
       width: 320px;
       box-shadow: 0 0 30px #00ffea;
     }
-    /* Rating Buttons Container (unchanged) */
+    /* Rating Buttons Container */
     #ratingButtons {
       display: flex;
       justify-content: center;
@@ -119,7 +119,6 @@
     /* Analogue Clock Styling */
     #analogClock {
       margin-top: 30px;
-      /* Center the canvas and give it a drop shadow for a neon glow */
       display: block;
       margin-left: auto;
       margin-right: auto;
@@ -204,7 +203,8 @@
           '&callback=' + callbackName;
         document.body.appendChild(script);
       }
-      // Function to draw the analogue clock based on remaining seconds.
+      // Function to draw the analogue clock.
+      // This clock shows the remaining time as a colored wedge that shrinks anticlockwise.
       function drawClock(remainingSeconds) {
         const canvas = document.getElementById("analogClock");
         if (!canvas.getContext) return;
@@ -214,11 +214,11 @@
         const radius = Math.min(width, height) / 2;
         const centerX = width / 2;
         const centerY = height / 2;
-        
+
         // Clear the canvas.
         ctx.clearRect(0, 0, width, height);
-        
-        // Draw the clock face.
+
+        // Draw the full clock face (a dark circle with a neon outline).
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius - 10, 0, 2 * Math.PI);
         ctx.fillStyle = "#000";
@@ -226,25 +226,21 @@
         ctx.lineWidth = 5;
         ctx.strokeStyle = "#00ffea";
         ctx.stroke();
-        
-        // Calculate the fraction of time elapsed.
-        // When countdownSeconds is 300, elapsed = 0; when 0, elapsed = 300.
-        const elapsed = 300 - remainingSeconds;
-        const fraction = elapsed / 300;
-        // Map the fraction to an angle. Start at -π/2 (12 o'clock) and rotate clockwise.
-        const handAngle = -Math.PI / 2 + fraction * 2 * Math.PI;
-        
-        // Draw the clock hand.
+
+        // Calculate the remaining fraction.
+        const totalTime = 300;
+        const fraction = remainingSeconds / totalTime;
+        const startAngle = -Math.PI / 2;  // 12 o'clock position.
+        // The wedge will be drawn anticlockwise from startAngle by the angle representing the remaining time.
+        const wedgeAngle = fraction * 2 * Math.PI;
+        const endAngle = startAngle - wedgeAngle;
+
+        // Draw the remaining time wedge.
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
-        ctx.lineTo(centerX + (radius - 30) * Math.cos(handAngle), centerY + (radius - 30) * Math.sin(handAngle));
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = "#00ffea";
-        ctx.stroke();
-        
-        // Draw a center circle.
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI);
+        // Draw arc in anticlockwise direction.
+        ctx.arc(centerX, centerY, radius - 10, startAngle, endAngle, true);
+        ctx.closePath();
         ctx.fillStyle = "#00ffea";
         ctx.fill();
       }
@@ -263,7 +259,6 @@
               submitMessage.textContent = "Error: " + response.message;
             }
             submitMessage.style.display = "block";
-            // Hide the message after 3 seconds.
             setTimeout(() => {
               submitMessage.style.display = "none";
             }, 3000);
@@ -283,9 +278,8 @@
           showModal();
         });
       });
-      // Function to update the countdown timer.
+      // Function to update the countdown timer and redraw the clock.
       function updateCountdown() {
-        // Update the analogue clock.
         drawClock(countdownSeconds);
         countdownSeconds--;
         if (countdownSeconds < 0) {
@@ -293,7 +287,7 @@
           countdownSeconds = 300;
         }
       }
-      // Update the countdown every second.
+      // Update the clock every second.
       setInterval(updateCountdown, 1000);
     });
   </script>
