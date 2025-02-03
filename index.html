@@ -71,6 +71,14 @@
       margin-bottom: 20px;
       text-shadow: 0 0 10px #00ffea;
     }
+    /* Submit Message Styling */
+    #submitMessage {
+      font-size: 1.2em;
+      margin-top: 10px;
+      text-shadow: 0 0 10px #00ffea;
+      color: #00ffea;
+      display: none;
+    }
     /* Modal Styles */
     #modal {
       display: none; /* Hidden by default */
@@ -117,10 +125,15 @@
     <h1>Welcome to the Concentration Tracker</h1>
     <p>Please select your name to begin:</p>
     <div id="nameBlocks">
-      <div class="nameBlock" data-name="Alice">Alice</div>
-      <div class="nameBlock" data-name="Bob">Bob</div>
-      <div class="nameBlock" data-name="Charlie">Charlie</div>
-      <div class="nameBlock" data-name="Dana">Dana</div>
+      <div class="nameBlock" data-name="America">America</div>
+      <div class="nameBlock" data-name="Sure">Sure</div>
+      <div class="nameBlock" data-name="Gabby">Gabby</div>
+      <div class="nameBlock" data-name="Santiago">Santiago</div>
+      <div class="nameBlock" data-name="Mia">Mia</div>
+      <div class="nameBlock" data-name="Jake">Jake</div>
+      <div class="nameBlock" data-name="Roberto">Roberto</div>
+      <div class="nameBlock" data-name="Taryn">Taryn</div>
+      <div class="nameBlock" data-name="Michael">Michael</div>
     </div>
   </div>
 
@@ -130,6 +143,8 @@
     <p>This website will prompt you every 5 minutes to rate your concentration on a 5‑point scale.</p>
     <!-- Countdown Timer -->
     <p id="countdownTimer">300 seconds until next prompt</p>
+    <!-- Submit Message -->
+    <p id="submitMessage"></p>
     
     <!-- Modal -->
     <div id="modal">
@@ -187,6 +202,17 @@
         const timestamp = new Date().toISOString();
         sendRating(timestamp, studentName, rating, function(response) {
           console.log("Server response:", response);
+          const submitMessage = document.getElementById("submitMessage");
+          if (response.result === "success") {
+            submitMessage.textContent = "Response submitted!";
+          } else {
+            submitMessage.textContent = "Error: " + response.message;
+          }
+          submitMessage.style.display = "block";
+          // Hide the message after 3 seconds.
+          setTimeout(() => {
+            submitMessage.style.display = "none";
+          }, 3000);
         });
         hideModal();
         countdownSeconds = 300; // Reset timer after rating submission.
@@ -198,25 +224,4 @@
         studentName = this.getAttribute('data-name');
         console.log("Student selected:", studentName);
         document.getElementById("startPage").style.display = "none";
-        document.getElementById("tracker").style.display = "block";
-        countdownSeconds = 300;
-        showModal();
-      });
-    });
-    // Function to update the countdown timer.
-    function updateCountdown() {
-      const timerElem = document.getElementById("countdownTimer");
-      if (timerElem) {
-        timerElem.textContent = countdownSeconds + " seconds until next prompt";
-      }
-      countdownSeconds--;
-      if (countdownSeconds < 0) {
-        showModal();
-        countdownSeconds = 300;
-      }
-    }
-    // Update the countdown every second.
-    setInterval(updateCountdown, 1000);
-  </script>
-</body>
-</html>
+        document.getElementById("tracker").style.display = "bloc
