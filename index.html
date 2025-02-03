@@ -64,12 +64,6 @@
       box-shadow: 0 0 20px #00ffea;
       display: none;
     }
-    /* Countdown Timer */
-    #countdownTimer {
-      font-size: 1.2em;
-      margin-bottom: 20px;
-      text-shadow: 0 0 10px #00ffea;
-    }
     /* Submit Message Styling */
     #submitMessage {
       font-size: 1.2em;
@@ -98,12 +92,12 @@
       width: 320px;
       box-shadow: 0 0 30px #00ffea;
     }
-    /* Rating Buttons Container - new flex layout */
+    /* Rating Buttons Container (unchanged) */
     #ratingButtons {
       display: flex;
       justify-content: center;
       flex-wrap: nowrap;
-      gap: 10px; /* Optional spacing between buttons */
+      gap: 10px;
     }
     /* Rating Buttons */
     #ratingButtons button {
@@ -120,6 +114,15 @@
     #ratingButtons button:hover {
       background: #00ffea;
       color: #000;
+      box-shadow: 0 0 20px #00ffea;
+    }
+    /* Analogue Clock Styling */
+    #analogClock {
+      margin-top: 30px;
+      /* Center the canvas and give it a drop shadow for a neon glow */
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
       box-shadow: 0 0 20px #00ffea;
     }
   </style>
@@ -147,11 +150,8 @@
   <div id="tracker">
     <h1>Concentration Tracker</h1>
     <p>This website will prompt you every 5 minutes to rate your concentration on a 5‑point scale.</p>
-    <!-- Countdown Timer -->
-    <p id="countdownTimer">300 seconds until next prompt</p>
     <!-- Submit Message -->
     <p id="submitMessage"></p>
-    
     <!-- Modal -->
     <div id="modal">
       <div id="modal-content">
@@ -165,6 +165,8 @@
         </div>
       </div>
     </div>
+    <!-- Analogue Clock (Canvas) -->
+    <canvas id="analogClock" width="300" height="300"></canvas>
   </div>
 
   <script>
@@ -202,6 +204,51 @@
           '&callback=' + callbackName;
         document.body.appendChild(script);
       }
+      // Function to draw the analogue clock based on remaining seconds.
+      function drawClock(remainingSeconds) {
+        const canvas = document.getElementById("analogClock");
+        if (!canvas.getContext) return;
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+        const radius = Math.min(width, height) / 2;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
+        // Clear the canvas.
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw the clock face.
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius - 10, 0, 2 * Math.PI);
+        ctx.fillStyle = "#000";
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#00ffea";
+        ctx.stroke();
+        
+        // Calculate the fraction of time elapsed.
+        // When countdownSeconds is 300, elapsed = 0; when 0, elapsed = 300.
+        const elapsed = 300 - remainingSeconds;
+        const fraction = elapsed / 300;
+        // Map the fraction to an angle. Start at -π/2 (12 o'clock) and rotate clockwise.
+        const handAngle = -Math.PI / 2 + fraction * 2 * Math.PI;
+        
+        // Draw the clock hand.
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + (radius - 30) * Math.cos(handAngle), centerY + (radius - 30) * Math.sin(handAngle));
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#00ffea";
+        ctx.stroke();
+        
+        // Draw a center circle.
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "#00ffea";
+        ctx.fill();
+      }
+
       // Event listeners for rating buttons.
       document.querySelectorAll('.ratingButton').forEach(button => {
         button.addEventListener('click', function() {
@@ -238,10 +285,8 @@
       });
       // Function to update the countdown timer.
       function updateCountdown() {
-        const timerElem = document.getElementById("countdownTimer");
-        if (timerElem) {
-          timerElem.textContent = countdownSeconds + " seconds until next prompt";
-        }
+        // Update the analogue clock.
+        drawClock(countdownSeconds);
         countdownSeconds--;
         if (countdownSeconds < 0) {
           showModal();
