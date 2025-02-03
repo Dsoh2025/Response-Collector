@@ -162,87 +162,89 @@
   </div>
 
   <script>
-    // Use the provided Apps Script web app URL.
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxbxhXHdw0YlaknWgpVJmktL9hYnxk9JDy4W_moqdX9Xmtx_1NFj55qfe7tWCJTLhmV/exec';
+    document.addEventListener("DOMContentLoaded", function() {
+      // Use the provided Apps Script web app URL.
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbxbxhXHdw0YlaknWgpVJmktL9hYnxk9JDy4W_moqdX9Xmtx_1NFj55qfe7tWCJTLhmV/exec';
 
-    // Global variable for storing the selected student's name.
-    let studentName = '';
-    // Countdown timer in seconds (300 seconds = 5 minutes).
-    let countdownSeconds = 300;
+      // Global variable for storing the selected student's name.
+      let studentName = '';
+      // Countdown timer in seconds (300 seconds = 5 minutes).
+      let countdownSeconds = 300;
 
-    // Function to show the modal.
-    function showModal() {
-      document.getElementById("modal").style.display = "block";
-    }
-    // Function to hide the modal.
-    function hideModal() {
-      document.getElementById("modal").style.display = "none";
-    }
-    // Function to send data using JSONP.
-    function sendRating(timestamp, name, rating, callback) {
-      const callbackName = 'jsonpCallback_' + Math.floor(Math.random() * 1000000);
-      // Define the callback function.
-      window[callbackName] = function(response) {
-        callback(response);
-        document.body.removeChild(script);
-        delete window[callbackName];
-      };
-      const script = document.createElement('script');
-      script.src = scriptURL +
-        '?timestamp=' + encodeURIComponent(timestamp) +
-        '&name=' + encodeURIComponent(name) +
-        '&rating=' + encodeURIComponent(rating) +
-        '&callback=' + callbackName;
-      document.body.appendChild(script);
-    }
-    // Event listeners for rating buttons.
-    document.querySelectorAll('.ratingButton').forEach(button => {
-      button.addEventListener('click', function() {
-        const rating = this.getAttribute('data-rating');
-        const timestamp = new Date().toISOString();
-        sendRating(timestamp, studentName, rating, function(response) {
-          console.log("Server response:", response);
-          const submitMessage = document.getElementById("submitMessage");
-          if (response.result === "success") {
-            submitMessage.textContent = "Response submitted!";
-          } else {
-            submitMessage.textContent = "Error: " + response.message;
-          }
-          submitMessage.style.display = "block";
-          // Hide the message after 3 seconds.
-          setTimeout(() => {
-            submitMessage.style.display = "none";
-          }, 3000);
+      // Function to show the modal.
+      function showModal() {
+        document.getElementById("modal").style.display = "block";
+      }
+      // Function to hide the modal.
+      function hideModal() {
+        document.getElementById("modal").style.display = "none";
+      }
+      // Function to send data using JSONP.
+      function sendRating(timestamp, name, rating, callback) {
+        const callbackName = 'jsonpCallback_' + Math.floor(Math.random() * 1000000);
+        // Define the callback function.
+        window[callbackName] = function(response) {
+          callback(response);
+          document.body.removeChild(script);
+          delete window[callbackName];
+        };
+        const script = document.createElement('script');
+        script.src = scriptURL +
+          '?timestamp=' + encodeURIComponent(timestamp) +
+          '&name=' + encodeURIComponent(name) +
+          '&rating=' + encodeURIComponent(rating) +
+          '&callback=' + callbackName;
+        document.body.appendChild(script);
+      }
+      // Event listeners for rating buttons.
+      document.querySelectorAll('.ratingButton').forEach(button => {
+        button.addEventListener('click', function() {
+          const rating = this.getAttribute('data-rating');
+          const timestamp = new Date().toISOString();
+          sendRating(timestamp, studentName, rating, function(response) {
+            console.log("Server response:", response);
+            const submitMessage = document.getElementById("submitMessage");
+            if (response.result === "success") {
+              submitMessage.textContent = "Response submitted!";
+            } else {
+              submitMessage.textContent = "Error: " + response.message;
+            }
+            submitMessage.style.display = "block";
+            // Hide the message after 3 seconds.
+            setTimeout(() => {
+              submitMessage.style.display = "none";
+            }, 3000);
+          });
+          hideModal();
+          countdownSeconds = 300; // Reset timer after rating submission.
         });
-        hideModal();
-        countdownSeconds = 300; // Reset timer after rating submission.
       });
-    });
-    // Event listeners for name blocks.
-    document.querySelectorAll('.nameBlock').forEach(block => {
-      block.addEventListener('click', function() {
-        studentName = this.getAttribute('data-name');
-        console.log("Student selected:", studentName);
-        document.getElementById("startPage").style.display = "none";
-        document.getElementById("tracker").style.display = "block";
-        countdownSeconds = 300;
-        showModal();
+      // Event listeners for name blocks.
+      document.querySelectorAll('.nameBlock').forEach(block => {
+        block.addEventListener('click', function() {
+          studentName = this.getAttribute('data-name');
+          console.log("Student selected:", studentName);
+          document.getElementById("startPage").style.display = "none";
+          document.getElementById("tracker").style.display = "block";
+          countdownSeconds = 300;
+          showModal();
+        });
       });
+      // Function to update the countdown timer.
+      function updateCountdown() {
+        const timerElem = document.getElementById("countdownTimer");
+        if (timerElem) {
+          timerElem.textContent = countdownSeconds + " seconds until next prompt";
+        }
+        countdownSeconds--;
+        if (countdownSeconds < 0) {
+          showModal();
+          countdownSeconds = 300;
+        }
+      }
+      // Update the countdown every second.
+      setInterval(updateCountdown, 1000);
     });
-    // Function to update the countdown timer.
-    function updateCountdown() {
-      const timerElem = document.getElementById("countdownTimer");
-      if (timerElem) {
-        timerElem.textContent = countdownSeconds + " seconds until next prompt";
-      }
-      countdownSeconds--;
-      if (countdownSeconds < 0) {
-        showModal();
-        countdownSeconds = 300;
-      }
-    }
-    // Update the countdown every second.
-    setInterval(updateCountdown, 1000);
   </script>
 </body>
 </html>
