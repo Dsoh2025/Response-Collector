@@ -204,7 +204,7 @@
         document.body.appendChild(script);
       }
       // Function to draw the analogue clock.
-      // This clock shows the remaining time as a colored wedge that shrinks anticlockwise.
+      // This clock counts down anticlockwise and removes a colored wedge as time elapses.
       function drawClock(remainingSeconds) {
         const canvas = document.getElementById("analogClock");
         if (!canvas.getContext) return;
@@ -214,11 +214,11 @@
         const radius = Math.min(width, height) / 2;
         const centerX = width / 2;
         const centerY = height / 2;
-
+        
         // Clear the canvas.
         ctx.clearRect(0, 0, width, height);
-
-        // Draw the full clock face (a dark circle with a neon outline).
+        
+        // Draw the clock face.
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius - 10, 0, 2 * Math.PI);
         ctx.fillStyle = "#000";
@@ -226,25 +226,29 @@
         ctx.lineWidth = 5;
         ctx.strokeStyle = "#00ffea";
         ctx.stroke();
-
-        // Calculate the remaining fraction.
+        
+        // Calculate the fraction of time remaining.
         const totalTime = 300;
         const fraction = remainingSeconds / totalTime;
-        const startAngle = -Math.PI / 2;  // 12 o'clock position.
-        // The wedge will be drawn anticlockwise from startAngle by the angle representing the remaining time.
+        // Draw a wedge representing the remaining time.
+        // Start angle is -π/2 (12 o'clock) and then subtract the wedge angle in anticlockwise direction.
+        const startAngle = -Math.PI / 2;
         const wedgeAngle = fraction * 2 * Math.PI;
         const endAngle = startAngle - wedgeAngle;
-
-        // Draw the remaining time wedge.
+        
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
-        // Draw arc in anticlockwise direction.
         ctx.arc(centerX, centerY, radius - 10, startAngle, endAngle, true);
         ctx.closePath();
         ctx.fillStyle = "#00ffea";
         ctx.fill();
+        
+        // Draw a center circle.
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "#00ffea";
+        ctx.fill();
       }
-
       // Event listeners for rating buttons.
       document.querySelectorAll('.ratingButton').forEach(button => {
         button.addEventListener('click', function() {
