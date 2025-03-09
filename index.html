@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Concentration Tracker</title>
-  <!-- Import futuristic font -->
+  <!-- Import a futuristic font -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
     /* Global Styles */
@@ -184,30 +184,31 @@
       function hideModal() {
         document.getElementById("modal").style.display = "none";
       }
-      
       // Function to send data using JSONP.
       function sendResponse(timestamp, name, response, callback) {
+        // Check if a name is selected.
         if (!name) {
           alert("Please select your name before submitting a response.");
           return;
         }
         const callbackName = 'jsonpCallback_' + Math.floor(Math.random() * 1000000);
-        let script = document.createElement('script'); // Declare script first.
+        // Define the callback function.
         window[callbackName] = function(res) {
           callback(res);
           document.body.removeChild(script);
           delete window[callbackName];
         };
-        const params = '?timestamp=' + encodeURIComponent(timestamp) +
-                       '&name=' + encodeURIComponent(name) +
-                       '&onTarget=' + encodeURIComponent(response) +
-                       '&callback=' + callbackName;
-        script.src = scriptURL + params;
-        console.log("Sending request with params: " + params);
+        const script = document.createElement('script');
+        script.src = scriptURL +
+          '?timestamp=' + encodeURIComponent(timestamp) +
+          '&name=' + encodeURIComponent(name) +
+          '&onTarget=' + encodeURIComponent(response) +
+          '&callback=' + callbackName;
         document.body.appendChild(script);
       }
       
       // Function to draw the analogue clock.
+      // The clock counts down anticlockwise and removes a colored wedge as time elapses.
       function drawClock(remainingSeconds) {
         const canvas = document.getElementById("analogClock");
         if (!canvas.getContext) return;
@@ -234,6 +235,7 @@
         const totalTime = 300;
         const fraction = remainingSeconds / totalTime;
         // Draw a wedge representing the remaining time.
+        // Start angle is -π/2 (12 o'clock) and draw the wedge anticlockwise.
         const startAngle = -Math.PI / 2;
         const wedgeAngle = fraction * 2 * Math.PI;
         const endAngle = startAngle - wedgeAngle;
@@ -257,7 +259,6 @@
         button.addEventListener('click', function() {
           const response = this.getAttribute('data-response'); // "Yes" or "No"
           const timestamp = new Date().toISOString();
-          console.log("Response clicked: timestamp: " + timestamp + ", name: " + studentName + ", response: " + response);
           sendResponse(timestamp, studentName, response, function(res) {
             console.log("Server response:", res);
             const submitMessage = document.getElementById("submitMessage");
@@ -293,9 +294,7 @@
         drawClock(countdownSeconds);
         countdownSeconds--;
         if (countdownSeconds < 0) {
-          if (document.getElementById("tracker").style.display !== "none" && studentName) {
-            showModal();
-          }
+          showModal();
           countdownSeconds = 300;
         }
       }
