@@ -92,26 +92,27 @@
       width: 320px;
       box-shadow: 0 0 30px #00ffea;
     }
-    /* Rating Buttons Container */
-    #ratingButtons {
+    /* Response Buttons Container */
+    #responseButtons {
       display: flex;
       justify-content: center;
       flex-wrap: nowrap;
-      gap: 10px;
+      gap: 20px;
+      margin-top: 20px;
     }
-    /* Rating Buttons */
-    #ratingButtons button {
-      padding: 10px 20px;
+    /* Response Buttons */
+    #responseButtons button {
+      padding: 10px 30px;
       border: 2px solid #00ffea;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 1.2em;
+      font-size: 1.4em;
       background: #1a1a1a;
       color: #fff;
       transition: all 0.3s ease;
       box-shadow: 0 0 10px #00ffea;
     }
-    #ratingButtons button:hover {
+    #responseButtons button:hover {
       background: #00ffea;
       color: #000;
       box-shadow: 0 0 20px #00ffea;
@@ -148,19 +149,16 @@
   <!-- Tracker Page -->
   <div id="tracker">
     <h1>Concentration Tracker</h1>
-    <p>This website will prompt you every 5 minutes to rate your concentration on a 5‑point scale.</p>
+    <p>This website will prompt you every 5 minutes to let us know if you're on target.</p>
     <!-- Submit Message -->
     <p id="submitMessage"></p>
     <!-- Modal -->
     <div id="modal">
       <div id="modal-content">
-        <p>Rate your concentration (1 = Not at all, 5 = Extremely):</p>
-        <div id="ratingButtons">
-          <button class="ratingButton" data-rating="1">1</button>
-          <button class="ratingButton" data-rating="2">2</button>
-          <button class="ratingButton" data-rating="3">3</button>
-          <button class="ratingButton" data-rating="4">4</button>
-          <button class="ratingButton" data-rating="5">5</button>
+        <p>Are you on target?</p>
+        <div id="responseButtons">
+          <button class="responseButton" data-response="Yes">Yes</button>
+          <button class="responseButton" data-response="No">No</button>
         </div>
       </div>
     </div>
@@ -171,13 +169,13 @@
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       // Use the provided Apps Script web app URL.
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbxQM5k6nOoZjFfO5v2T1VKsWsXksfF24JFmt5PhRCPeCXpZC5vDTABbrvRNdY8S8jGd/exec';
-
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbxbxhXHdw0YlaknWgpVJmktL9hYnxk9JDy4W_moqdX9Xmtx_1NFj55qfe7tWCJTLhmV/exec';
+      
       // Global variable for storing the selected student's name.
       let studentName = '';
       // Countdown timer in seconds (300 seconds = 5 minutes).
       let countdownSeconds = 300;
-
+      
       // Function to show the modal.
       function showModal() {
         document.getElementById("modal").style.display = "block";
@@ -187,11 +185,11 @@
         document.getElementById("modal").style.display = "none";
       }
       // Function to send data using JSONP.
-      function sendRating(timestamp, name, rating, callback) {
+      function sendResponse(timestamp, name, response, callback) {
         const callbackName = 'jsonpCallback_' + Math.floor(Math.random() * 1000000);
         // Define the callback function.
-        window[callbackName] = function(response) {
-          callback(response);
+        window[callbackName] = function(res) {
+          callback(res);
           document.body.removeChild(script);
           delete window[callbackName];
         };
@@ -199,7 +197,7 @@
         script.src = scriptURL +
           '?timestamp=' + encodeURIComponent(timestamp) +
           '&name=' + encodeURIComponent(name) +
-          '&rating=' + encodeURIComponent(rating) +
+          '&onTarget=' + encodeURIComponent(response) +
           '&callback=' + callbackName;
         document.body.appendChild(script);
       }
@@ -231,7 +229,7 @@
         const totalTime = 300;
         const fraction = remainingSeconds / totalTime;
         // Draw a wedge representing the remaining time.
-        // Start angle is -π/2 (12 o'clock) and then subtract the wedge angle in anticlockwise direction.
+        // Start angle is -π/2 (12 o'clock) and draw the wedge anticlockwise.
         const startAngle = -Math.PI / 2;
         const wedgeAngle = fraction * 2 * Math.PI;
         const endAngle = startAngle - wedgeAngle;
@@ -249,28 +247,31 @@
         ctx.fillStyle = "#00ffea";
         ctx.fill();
       }
-      // Event listeners for rating buttons.
-      document.querySelectorAll('.ratingButton').forEach(button => {
+      
+      // Event listeners for response buttons.
+      document.querySelectorAll('.responseButton').forEach(button => {
         button.addEventListener('click', function() {
-          const rating = this.getAttribute('data-rating');
+          const response = this.getAttribute('data-response'); // "Yes" or "No"
           const timestamp = new Date().toISOString();
-          sendRating(timestamp, studentName, rating, function(response) {
-            console.log("Server response:", response);
+          sendResponse(timestamp, studentName, response, function(res) {
+            console.log("Server response:", res);
             const submitMessage = document.getElementById("submitMessage");
-            if (response.result === "success") {
+            if (res.result === "success") {
               submitMessage.textContent = "Response submitted!";
             } else {
-              submitMessage.textContent = "Error: " + response.message;
+              submitMessage.textContent = "Error: " + res.message;
             }
             submitMessage.style.display = "block";
+            // Hide the message after 3 seconds.
             setTimeout(() => {
               submitMessage.style.display = "none";
             }, 3000);
           });
           hideModal();
-          countdownSeconds = 300; // Reset timer after rating submission.
+          countdownSeconds = 300; // Reset timer after submission.
         });
       });
+      
       // Event listeners for name blocks.
       document.querySelectorAll('.nameBlock').forEach(block => {
         block.addEventListener('click', function() {
@@ -282,7 +283,8 @@
           showModal();
         });
       });
-      // Function to update the countdown timer and redraw the clock.
+      
+      // Function to update the clock.
       function updateCountdown() {
         drawClock(countdownSeconds);
         countdownSeconds--;
