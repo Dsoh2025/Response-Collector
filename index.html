@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Concentration Tracker</title>
-  <!-- Import a futuristic font -->
+  <!-- Import futuristic font -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
     /* Global Styles */
@@ -150,4 +150,159 @@
   <div id="tracker">
     <h1>Concentration Tracker</h1>
     <p>This website will prompt you every 5 minutes to let us know if you're on target.</p>
-    <!-- Submit Message -
+    <!-- Submit Message -->
+    <p id="submitMessage"></p>
+    <!-- Modal -->
+    <div id="modal">
+      <div id="modal-content">
+        <p>Are you on target?</p>
+        <div id="responseButtons">
+          <button class="responseButton" data-response="Yes">Yes</button>
+          <button class="responseButton" data-response="No">No</button>
+        </div>
+      </div>
+    </div>
+    <!-- Analogue Clock (Canvas) -->
+    <canvas id="analogClock" width="300" height="300"></canvas>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Use the provided Apps Script web app URL.
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbxbxhXHdw0YlaknWgpVJmktL9hYnxk9JDy4W_moqdX9Xmtx_1NFj55qfe7tWCJTLhmV/exec';
+      
+      // Global variable for storing the selected student's name.
+      let studentName = '';
+      // Countdown timer in seconds (300 seconds = 5 minutes).
+      let countdownSeconds = 300;
+      
+      // Function to show the modal.
+      function showModal() {
+        document.getElementById("modal").style.display = "block";
+      }
+      // Function to hide the modal.
+      function hideModal() {
+        document.getElementById("modal").style.display = "none";
+      }
+      
+      // Function to send data using JSONP.
+      function sendResponse(timestamp, name, response, callback) {
+        if (!name) {
+          alert("Please select your name before submitting a response.");
+          return;
+        }
+        const callbackName = 'jsonpCallback_' + Math.floor(Math.random() * 1000000);
+        let script = document.createElement('script'); // Declare script first.
+        window[callbackName] = function(res) {
+          callback(res);
+          document.body.removeChild(script);
+          delete window[callbackName];
+        };
+        const params = '?timestamp=' + encodeURIComponent(timestamp) +
+                       '&name=' + encodeURIComponent(name) +
+                       '&onTarget=' + encodeURIComponent(response) +
+                       '&callback=' + callbackName;
+        script.src = scriptURL + params;
+        console.log("Sending request with params: " + params);
+        document.body.appendChild(script);
+      }
+      
+      // Function to draw the analogue clock.
+      function drawClock(remainingSeconds) {
+        const canvas = document.getElementById("analogClock");
+        if (!canvas.getContext) return;
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+        const radius = Math.min(width, height) / 2;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
+        // Clear the canvas.
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw the clock face.
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius - 10, 0, 2 * Math.PI);
+        ctx.fillStyle = "#000";
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#00ffea";
+        ctx.stroke();
+        
+        // Calculate the fraction of time remaining.
+        const totalTime = 300;
+        const fraction = remainingSeconds / totalTime;
+        // Draw a wedge representing the remaining time.
+        const startAngle = -Math.PI / 2;
+        const wedgeAngle = fraction * 2 * Math.PI;
+        const endAngle = startAngle - wedgeAngle;
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius - 10, startAngle, endAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = "#00ffea";
+        ctx.fill();
+        
+        // Draw a center circle.
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "#00ffea";
+        ctx.fill();
+      }
+      
+      // Event listeners for response buttons.
+      document.querySelectorAll('.responseButton').forEach(button => {
+        button.addEventListener('click', function() {
+          const response = this.getAttribute('data-response'); // "Yes" or "No"
+          const timestamp = new Date().toISOString();
+          console.log("Response clicked: timestamp: " + timestamp + ", name: " + studentName + ", response: " + response);
+          sendResponse(timestamp, studentName, response, function(res) {
+            console.log("Server response:", res);
+            const submitMessage = document.getElementById("submitMessage");
+            if (res.result === "success") {
+              submitMessage.textContent = "Response submitted!";
+            } else {
+              submitMessage.textContent = "Error: " + res.message;
+            }
+            submitMessage.style.display = "block";
+            setTimeout(() => {
+              submitMessage.style.display = "none";
+            }, 3000);
+          });
+          hideModal();
+          countdownSeconds = 300; // Reset timer after submission.
+        });
+      });
+      
+      // Event listeners for name blocks.
+      document.querySelectorAll('.nameBlock').forEach(block => {
+        block.addEventListener('click', function() {
+          studentName = this.getAttribute('data-name');
+          console.log("Student selected:", studentName);
+          document.getElementById("startPage").style.display = "none";
+          document.getElementById("tracker").style.display = "block";
+          countdownSeconds = 300;
+          showModal();
+        });
+      });
+      
+      // Function to update the clock.
+      function updateCountdown() {
+        drawClock(countdownSeconds);
+        countdownSeconds--;
+        if (countdownSeconds < 0) {
+          if (document.getElementById("tracker").style.display !== "none" && studentName) {
+            showModal();
+          }
+          countdownSeconds = 300;
+        }
+      }
+      
+      // Update the clock every second.
+      setInterval(updateCountdown, 1000);
+    });
+  </script>
+</body>
+</html>
