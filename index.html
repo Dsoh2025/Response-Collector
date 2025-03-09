@@ -186,6 +186,11 @@
       }
       // Function to send data using JSONP.
       function sendResponse(timestamp, name, response, callback) {
+        // Check if a name is selected.
+        if (!name) {
+          alert("Please select your name before submitting a response.");
+          return;
+        }
         const callbackName = 'jsonpCallback_' + Math.floor(Math.random() * 1000000);
         // Define the callback function.
         window[callbackName] = function(res) {
@@ -201,8 +206,9 @@
           '&callback=' + callbackName;
         document.body.appendChild(script);
       }
+      
       // Function to draw the analogue clock.
-      // This clock counts down anticlockwise and removes a colored wedge as time elapses.
+      // The clock counts down anticlockwise and removes a colored wedge as time elapses.
       function drawClock(remainingSeconds) {
         const canvas = document.getElementById("analogClock");
         if (!canvas.getContext) return;
@@ -262,7 +268,6 @@
               submitMessage.textContent = "Error: " + res.message;
             }
             submitMessage.style.display = "block";
-            // Hide the message after 3 seconds.
             setTimeout(() => {
               submitMessage.style.display = "none";
             }, 3000);
@@ -293,6 +298,7 @@
           countdownSeconds = 300;
         }
       }
+      
       // Update the clock every second.
       setInterval(updateCountdown, 1000);
     });
